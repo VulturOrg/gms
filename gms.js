@@ -8,7 +8,7 @@
 
 Array.prototype.contains = function (value) {
     for(var i = 0; i < this.length; ++i) {
-        if(value == this[i])
+        if(value === this[i])
             return true;
     }
 
