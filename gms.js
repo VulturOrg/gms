@@ -7,15 +7,49 @@
 */
 
 Array.prototype.contains = function (value) {
-    for(var i = 0; i < this.length; ++i) {
+    /* Contains method for built-in Array.
+
+    Check if ``value`` exists
+
+    :param value: a value to check
+    :returns: ``true`` if exists, ``false`` else
+    */
+
+    for(var i = 0; i < this.length; ++i)
         if(value === this[i])
             return true;
-    }
 
     return false;
 };
 
+function concatObjects() {
+    /* Concat objects function.
+
+    Concat all the objects given as arguments, require at least 2 objects
+
+    :returns: an object with all propertys
+    */
+
+    var result = {};
+    var n = arguments.length;
+
+    if(n < 2)
+        throw "concatObjects() require at least 2 objects";
+
+    for(var i = 0; i < n; ++i)
+        for(property in arguments[i])
+            if(arguments[i].hasOwnProperty(property))
+                result[property] = arguments[i][property];
+
+    return result;
+};
+
 function Map(config) {
+    /* Map constructor.
+
+    :param config: an object with the configuration
+    */
+
     // Map container and default settings {
 
     this.target = document.querySelector(config.target);
