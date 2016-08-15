@@ -2,7 +2,7 @@
 
 :Author: A.C. Vultur
 :Licence: MIT
-:Version: 0.1.0
+:Version: 0.2.0
 :Date: 2016-08-01
 */
 
@@ -57,7 +57,32 @@ function getElement(value) {
 }
 
 function setValue(obj, value) {
-    obj.value = value;
+    /* Set value function.
+
+    Write a value in a HTML object, this function decide itself which way must
+    use for write in the HTML object.
+
+    :param obj: a HTML object
+    :param value: a value for write in ``obj``
+    */
+
+    if(obj.type == "radio") {
+        var fields = document.getElementsByName(obj.name);
+
+        for(var i = 0; i < fields.length; ++i) {
+            if(fields[i].value == value) {
+                fields[i].checked = true;
+                break;
+            }
+        }
+    }
+
+    else if((new String(obj).search("Input") >= 0) ||
+        (new String(obj).search("Select") >= 0))
+        obj.value = value;
+
+    else
+        obj.innerHTML = value;
 }
 
 
