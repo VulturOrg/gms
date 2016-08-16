@@ -3,7 +3,7 @@
 :Author: A.C. Vultur
 :Licence: MIT
 :Version: 0.2.0
-:Date: 2016-08-01
+:Date: 2016-08-15
 */
 
 Array.prototype.contains = function (value) {
