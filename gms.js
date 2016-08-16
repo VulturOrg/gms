@@ -2,8 +2,8 @@
 
 :Author: A.C. Vultur
 :Licence: MIT
-:Version: 0.2.0
-:Date: 2016-08-15
+:Version: 0.2.1
+:Date: 2016-08-16
 */
 
 Array.prototype.contains = function (value) {
@@ -176,7 +176,7 @@ function Map(config) {
     this.readonly = config.readonly || false;
     this.zoom = config.zoom || 5;
     this.current = config.current || false;
-    config.center = config.current[0] || config.current || config.center;
+    config.center = (config.current instanceof Array ? config.current[0] : config.current) || config.center;
 
     if(config.center) {
         if(config.center.lat)
