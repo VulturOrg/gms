@@ -78,6 +78,14 @@ Usage
             height: "20em",
             width: "100%",
 
+            // Bypassing options to the Google Maps API
+            // https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions
+
+            bypass: {
+                minzoom: 4,
+                draggable: false
+            },
+
             // Default settings
 
             zoom: 5,
@@ -118,7 +126,18 @@ Usage
                 hemisphere: "#hemisphere",
                 easting: "#easting",
                 northing: "#northing"
-            }
+            },
+
+            // It's possible use a custom callable when a marker is clicked,
+            // it receives an object with the coords of the marker as argument
+
+            callable: function (location) {
+                alert("I know where you are! Muajaja!");
+            },
+
+            // Defining a readonly map
+
+            readonly: true
         }).init();
     </script>
 
