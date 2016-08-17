@@ -173,6 +173,10 @@ function Map(config) {
 
     this.bypass = config.bypass || {};  // Options for Google API
 
+    // Called when a marker is clicked
+
+    this.callable = config.callable || false;
+
     this.readonly = config.readonly || false;
     this.zoom = config.zoom || 5;
     this.current = config.current || false;
@@ -365,4 +369,7 @@ Map.prototype.showCoords = function (location) {
 
     for(var field in fields)
         setValue(fields[field], location[field]);
+
+    if(this.callable)
+        this.callable(location);
 };
