@@ -2,30 +2,185 @@
 
 :Author: A.C. Vultur
 :Licence: MIT
-:Version: 0.1.0
-:Date: 2016-08-01
+:Version: 0.2.1
+:Date: 2016-08-16
 */
 
 Array.prototype.contains = function (value) {
-    for(var i = 0; i < this.length; ++i) {
-        if(value == this[i])
+    /* Contains method for built-in Array.
+
+    Check if ``value`` exists
+
+    :param value: a value to check
+    :returns: ``true`` if exists, ``false`` else
+    */
+
+    for(var i = 0; i < this.length; ++i)
+        if(value === this[i])
             return true;
-    }
 
     return false;
 };
 
-function Map(config) {
-    // Map container and default settings {
+function concatObjects() {
+    /* Concat objects function.
 
-    this.target = document.querySelector(config.target);
+    Concat all the objects given as arguments, require at least 2 objects
+
+    :returns: an object with all propertys
+    */
+
+    var result = {};
+    var n = arguments.length;
+
+    if(n < 2)
+        throw "concatObjects() require at least 2 objects";
+
+    for(var i = 0; i < n; ++i)
+        for(var property in arguments[i])
+            if(arguments[i].hasOwnProperty(property))
+                result[property] = arguments[i][property];
+
+    return result;
+}
+
+function getElement(value) {
+    /* Get element function.
+
+    Check if ``value`` is a string and get the HTML element from it
+
+    :param value: a string with a CSS selector or a HTML object 
+    :returns: a HTML object
+    */
+
+    return typeof value === "string" ? document.querySelector(value) : value;
+}
+
+function setValue(obj, value) {
+    /* Set value function.
+
+    Write a value in a HTML object, this function decide itself which way must
+    use for write in the HTML object.
+
+    :param obj: a HTML object
+    :param value: a value for write in ``obj``
+    */
+
+    if(obj.type == "radio") {
+        var fields = document.getElementsByName(obj.name);
+
+        for(var i = 0; i < fields.length; ++i) {
+            if(fields[i].value == value) {
+                fields[i].checked = true;
+                break;
+            }
+        }
+    }
+
+    else if((new String(obj).search("Input") >= 0) ||
+        (new String(obj).search("Select") >= 0))
+        obj.value = value;
+
+    else
+        obj.innerHTML = value;
+}
+
+
+
+// Coords functions {
+
+function getLatLng(from) {
+    /* Get geographic coords function.
+
+    :param from: an object with coords
+    :returns: an object with geographic coords
+    */
+
+    if(from.zone && from.hemisphere && from.easting && from.northing) {
+        var result = utm2latlng(from.zone, from.hemisphere, from.easting, from.northing);
+
+        return {lat: result[0], lng: result[1]};
+    }
+
+    else
+        throw incompleteCoordsError(from);
+}
+
+function getUTM(from) {
+    /* Get UTM coords function.
+
+    :param from: an object with coords
+    :returns: an object with UTM coords
+    */
+
+    if(from.lat && from.lng) {
+        var result = latlng2utm(from.lat, from.lng);
+
+        return {zone: result[0], hemisphere: result[1], easting: result[2], northing: result[3]};
+    }
+
+    else
+        throw incompleteCoordsError(from);
+}
+
+function incompleteCoordsError(coords) {
+    var msg = "The coords are incomplete, received:";
+
+    for(var coord in coords)
+        msg += " * " + coord + ": " + coords[coord];
+
+    return msg;
+}
+
+function latlng2utm(lat, lng) {
+    var latlng = "+proj=longlat +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
+    var zone = (1 + Math.floor((lng + 180) / 6));
+    var hemisphere = (lat >= 0) ? "N" : "S";
+    var utm = "+proj=utm +zone=" + zone + " +ellps=WGS84 +datum=WGS84 +no_defs";
+
+    return new Array(zone, hemisphere).concat(proj4(latlng, utm, [lng, lat]));
+}
+
+function utm2latlng(zone, hemisphere, easting, northing) {
+    var utm = "+proj=utm +zone=" + zone + ((hemisphere == "S") ? " +south" : "") + " +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
+    var latlng = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+
+    return proj4(utm, latlng, [easting, northing]).reverse();
+}
+
+// }
+
+
+
+function Map(config) {
+    /* Map constructor.
+
+    Interface to easy-create maps with Google Maps, this constructor supports
+    the following options:
+
+    * ``target``: a string with a CSS selector or a HTML object
+
+    :param config: an object with the configurations
+    */
+
+    // Map container {
+
+    this.target = getElement(config.target);
     this.target.style.height = config.height || config.width || "25em";
     this.target.style.width = config.width || config.height || "100%";
 
-    this.zoom = config.zoom || 5;
+    // }
+
+    this.bypass = config.bypass || {};  // Options for Google API
+
+    // Called when a marker is clicked
+
+    this.callable = config.callable || false;
+
     this.readonly = config.readonly || false;
+    this.zoom = config.zoom || 5;
     this.current = config.current || false;
-    config.center = config.current || config.center;
+    config.center = (config.current instanceof Array ? config.current[0] : config.current) || config.center;
 
     if(config.center) {
         if(config.center.lat)
@@ -41,51 +196,47 @@ function Map(config) {
     else
         this.center = {lat: 6.42375, lng: -66.58973000000003};
 
+    // Fields config {
+
+    this.fields = config.fields;
+
+    for(var field in this.fields)
+        if(this.fields.hasOwnProperty(field))
+            this.fields[field] = getElement(this.fields[field]);
+
     // }
 
-    // Markers and Searchbox {
-
-    this.markers = [];
-    this.searchbox = config.searchbox || false;
-
-    // }
-
-    // Coordinates system {
-
-    this.coords = config.coords || new Array("latlng");
-
-        // Fields config {
-
-    if(this.coords.contains("latlng")) {
-        this.lat = document.querySelector(config.lat) || false;
-        this.lng = document.querySelector(config.lng) || false;
+    if(! this.readonly) {
+        this.markers = [];
+        this.searchbox = config.searchbox || false;
     }
-
-    if(this.coords.contains("utm")) {
-        this.zone = document.querySelector(config.zone) || false;
-        this.hemisphere = document.querySelector(config.hemisphere) || false;
-        this.easting = document.querySelector(config.easting) || false;
-        this.northing = document.querySelector(config.northing) || false;
-    }
-
-        // }
-    // }
 }
 
 Map.prototype.init = function () {
+    /* Map init method.
+    */
+
     var obj = this;
 
-    obj.map = new google.maps.Map(obj.target, {
+    obj.map = new google.maps.Map(obj.target, concatObjects({
         center: obj.center,
         zoom: obj.zoom,
         mapTypeId: google.maps.MapTypeId.ROADMAP
-    });
+    }, obj.bypass));
 
-    // Set current place {
+    // Add marker for current place {
 
     if(obj.current) {
-        obj.addMarker(obj.current);
-        obj.showCoords(obj.current);
+        if(! obj.current.length) {
+            obj.addMarker(obj.current);
+            obj.showCoords(obj.current);
+        }
+
+        // For multiple current places
+
+        else
+            for(var i = 0; i < obj.current.length; ++i)
+                obj.addMarker(obj.current[i]);
     }
 
     // }
@@ -111,13 +262,11 @@ Map.prototype.init = function () {
                 obj.searchbox.setBounds(obj.map.getBounds());
             });
 
-            // Founded places {
-
             obj.sbMarkers = [];
             obj.searchbox.addListener("places_changed", function () {
-                var places = obj.searchbox.getPlaces();
+                var places = obj.searchbox.getPlaces();  // Founded places
 
-                if (places.length == 0) {
+                if(places.length == 0) {
                     return;
                 }
 
@@ -130,34 +279,23 @@ Map.prototype.init = function () {
 
                 // }
 
-                // Show places {
-
                 var bounds = new google.maps.LatLngBounds();
 
                 places.forEach(function (place) {
 
-                    // Create markers {
+                    // Create markers
 
                     obj.sbMarkers.push(obj.addMarker(place.geometry.location));
 
-                    if (place.geometry.viewport)
+                    if(place.geometry.viewport)
                         bounds.union(place.geometry.viewport);
 
                     else
                         bounds.extend(place.geometry.location);
-
-                    // }
-
                 });
 
                 obj.map.fitBounds(bounds);
-
-                // }
-
             });
-
-            // }
-
         }
 
         // }
@@ -165,20 +303,16 @@ Map.prototype.init = function () {
 };
 
 Map.prototype.addMarker = function (location) {
+    /* Add marker method.
+
+    :param location: an object with coords
+    :returns: a marker object
+    */
+
     var obj = this;
 
-    // UTM to Geographics {
-
-    if((! location.lat) || (! location.lng)) {
-        if(location.zone && location.hemisphere && location.easting && location.northing) {
-            var result = utm2latlng(location.zone, location.hemisphere, location.easting, location.northing);
-
-            location.lat = result[0];
-            location.lng = result[1];
-        }
-    }
-
-    // }
+    if(! location.lat || ! location.lng)
+        location = getLatLng(location);
 
     var marker = new google.maps.Marker({
         map: obj.map,
@@ -208,52 +342,34 @@ Map.prototype.addMarker = function (location) {
 };
 
 Map.prototype.delMarker = function (marker) {
+    /* Delete marker method.
+    */
+
     this.markers.splice(this.markers.indexOf(marker), 1);
     marker.setMap(null);
 };
 
-Map.prototype.showCoords = function (coords) {
-    if(this.coords.contains("latlng")) {
-        if(coords.zone && coords.hemisphere && coords.easting && coords.northing) {
-            var result = utm2latlng(coords.zone, coords.hemisphere, coords.easting, coords.northing);
+Map.prototype.showCoords = function (location) {
+    /* Show coords method.
 
-            coords.lat = result[0];
-            coords.lng = result[1];
-        }
+    Write coords of a location in the coords fields
 
-        this.lat.value = coords.lat;
-        this.lng.value = coords.lng;
-    }
+    :param location: an object with coords
+    */
 
-    if(this.coords.contains("utm")) {
-        if(coords.lat && coords.lng) {
-            var result = latlng2utm(coords.lat, coords.lng);
+    var fields = this.fields;
 
-            coords.zone = result[0];
-            coords.hemisphere = result[1];
-            coords.easting = result[2];
-            coords.northing = result[3];
-        }
+    if(fields.lat || fields.lng)
+        if(! location.lat || ! location.lng)
+            location = concatObjects(location, getLatLng(location));
 
-        this.zone.value = coords.zone;
-        this.hemisphere.value = coords.hemisphere;
-        this.easting.value = coords.easting;
-        this.northing.value = coords.northing;
-    }
+    if(fields.zone || fields.hemisphere || fields.easting || fields.northing)
+        if(! location.zone || ! location.hemisphere || ! location.easting || ! location.northing)
+            location = concatObjects(location, getUTM(location));
+
+    for(var field in fields)
+        setValue(fields[field], location[field]);
+
+    if(this.callable)
+        this.callable(location);
 };
-
-function latlng2utm(lat, lng) {
-    var latlng = "+proj=longlat +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
-    var zone = (1 + Math.floor((lng + 180) / 6));
-    var hemisphere = (lat >= 0) ? "N" : "S";
-    var utm = "+proj=utm +zone=" + zone + " +ellps=WGS84 +datum=WGS84 +no_defs";
-
-    return new Array(zone, hemisphere).concat(proj4(latlng, utm, [lng, lat]));
-}
-
-function utm2latlng(zone, hemisphere, easting, northing) {
-    var utm = "+proj=utm +zone=" + zone + ((hemisphere == "S") ? " +south" : "") + " +ellps=WGS84 +datum=WGS84 +units=m +no_defs";
-    var latlng = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-
-    return proj4(utm, latlng, [easting, northing]).reverse();
-}

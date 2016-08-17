@@ -35,10 +35,39 @@ Usage
 
 .. code:: html
 
-    <div id="map"></div>
-
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=<API Key>&libraries=places">
+        </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.14/proj4.js">
+        </script>
     <script src="gms.js"></script>
     <link rel="stylesheet" href="gms.css" />
+
+    <div id="map"></div>
+
+    <strong>Lat:</strong>
+    <input type="text" id="lat" />
+
+    <strong>Lng:</strong>
+    <input type="text" id="lng" />
+
+    <br /><br />
+
+    <strong>Zone:</strong>
+    <input type="text" id="zone" />
+
+    <strong>Hemisphere:</strong>
+    <input type="radio" name="hemisphere" id="hemisphere" value="N" /> North
+    <input type="radio" name="hemisphere" value="S" /> South
+
+    <br />
+
+    <strong>Easting:</strong>
+    <textarea id="easting"></textarea>
+
+    <strong>Northing:</strong>
+    <span id="northing"></span>
 
     <script>
         new Map({
@@ -49,14 +78,32 @@ Usage
             height: "20em",
             width: "100%",
 
+            // Bypassing options to the Google Maps API
+            // https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions
+
+            bypass: {
+                minzoom: 4,
+                draggable: false
+            },
+
             // Default settings
 
             zoom: 5,
             center: {lat: 6.42375, lng: -66.58973000000003},
 
-            // A current place will add a marker by default and overide the center
+            // A current place will add a marker by default and overide the
+            // center
 
             current: {lat: 6.42375, lng: -66.58973000000003},
+
+                // or a list of places, the first location will be the center
+
+            current: [
+                {lat: 6.42375, lng: -66.58973000000003},
+                {lat: 7.42375, lng: -66.58973000000003},
+                {lat: 6.42375, lng: -67.58973000000003},
+                {lat: 7.42375, lng: -67.58973000000003}
+            ],
 
             // Search Box
 
@@ -69,18 +116,28 @@ Usage
                 value: "Venezuela"
             },
 
-            // Coords settings
+            // Fields, must be a CSS Selector or a HTML object. For *radios*,
+            // the attribute ``name`` is mandatory
 
-            coords: ["latlng", "utm"],
+            fields: {
+                lat: "#lat",
+                lng: "#lng",
+                zone: "#zone",
+                hemisphere: "#hemisphere",
+                easting: "#easting",
+                northing: "#northing"
+            },
 
-                // CSS Selector for inputs
+            // It's possible use a custom callable when a marker is clicked,
+            // it receives an object with the coords of the marker as argument
 
-            lat: "#lat",
-            lng: "#lng",
-            zone: "#zone",
-            hemisphere: "#hemisphere",
-            easting: "#easting",
-            northing: "#northing"
+            callable: function (location) {
+                alert("I know where you are! Muajaja!");
+            },
+
+            // Defining a readonly map
+
+            readonly: true
         }).init();
     </script>
 
@@ -88,13 +145,11 @@ Samples
 =======
 
 1. `Simple map <https://vulturorg.github.io/gms/#simple>`_
-2. `Geographic Coords <https://vulturorg.github.io/gms/#geographic>`_
-3. `UTM Coords <https://vulturorg.github.io/gms/#utm>`_
-4. `Multicoords <https://vulturorg.github.io/gms/#multi>`_
-5. `Searchbox <https://vulturorg.github.io/gms/#searchbox>`_
-6. `Default place <https://vulturorg.github.io/gms/#default>`_
-7. `AIO Map <https://vulturorg.github.io/gms/#aio>`_
-8. `Read Only <https://vulturorg.github.io/gms/#readonly>`_
+2. `Fields <https://vulturorg.github.io/gms/#fields>`_
+3. `Searchbox <https://vulturorg.github.io/gms/#searchbox>`_
+4. `Default place <https://vulturorg.github.io/gms/#default>`_
+5. `Complex Map <https://vulturorg.github.io/gms/#complex>`_
+6. `Read Only <https://vulturorg.github.io/gms/#readonly>`_
 
 References
 ==========
