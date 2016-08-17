@@ -2,7 +2,7 @@
 
 :Author: A.C. Vultur
 :Licence: MIT
-:Version: 0.2.1
+:Version: 0.3.0
 :Date: 2016-08-16
 */
 
@@ -177,6 +177,7 @@ function Map(config) {
 
     this.callable = config.callable || false;
 
+    this.markers = [];
     this.readonly = config.readonly || false;
     this.zoom = config.zoom || 5;
     this.current = config.current || false;
@@ -206,10 +207,8 @@ function Map(config) {
 
     // }
 
-    if(! this.readonly) {
-        this.markers = [];
+    if(! this.readonly)
         this.searchbox = config.searchbox || false;
-    }
 }
 
 Map.prototype.init = function () {
@@ -251,9 +250,25 @@ Map.prototype.init = function () {
         if(obj.searchbox) {
             var input = document.createElement("input");
             input.type = "text";
-            input.className = "searchbox controls";
             input.placeholder = obj.searchbox.placeholder || "Search..";
             input.value = obj.searchbox.value || "";
+
+            // Styles {
+
+            input.style.backgroundColor = "#fff";
+            input.style.border = "1px solid transparent";
+            input.style.borderRadius = "2px";
+            input.style.boxShadow = "0px 2px 1px rgba(0, 0, 0, 0.2)";
+            input.style.fontFamily = "Roboto";
+            input.style.fontSize = "1.4em";
+            input.style.outline = "none";
+            input.style.padding = "0.3em 1em";
+            input.style.marginTop = "10px";
+
+            input.setAttribute("onfocus", "this.style.borderColor = '#4d90fe';" + (this.onfocus ? this.onfocus : ""));
+            input.setAttribute("onblur", "this.style.borderColor = 'transparent';" + (this.onblur ? this.onblur : ""));
+
+            // }
 
             obj.searchbox = new google.maps.places.SearchBox(input);
             obj.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);

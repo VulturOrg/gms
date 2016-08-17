@@ -35,14 +35,18 @@ Usage
 
 .. code:: html
 
+    <!-- Depends -->
+
     <script
       src="https://maps.googleapis.com/maps/api/js?key=<API Key>&libraries=places">
         </script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.14/proj4.js">
         </script>
+
+    <!-- /Depends -->
+
     <script src="gms.js"></script>
-    <link rel="stylesheet" href="gms.css" />
 
     <div id="map"></div>
 
@@ -82,7 +86,7 @@ Usage
             // https://developers.google.com/maps/documentation/javascript/3.exp/reference#MapOptions
 
             bypass: {
-                minzoom: 4,
+                minZoom: 4,
                 draggable: false
             },
 
