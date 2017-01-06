@@ -6,8 +6,8 @@ __ `Google Console`_
 Google Maps Snippet
 ###################
 
-Put maps in your forms and get/show the coordinates from a place. This snippet
-supports UTM and Geographic coordinates.
+Put maps in your forms and get/show the coordinates from a place. Support UTM
+and Geographic coordinates.
 
 Depends
 =======

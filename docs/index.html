@@ -1,0 +1,527 @@
+<!doctype html>
+<!--
+  Material Design Lite
+  Copyright 2015 Google Inc. All rights reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+
+  <!-- SEO -->
+
+  <link rel="canonical" href="https://vulturorg.github.io/gms/" />
+  <!-- <link rel="amphtml" href="https://vulturorg.github.io/gms/index-amp.html"> -->
+  <meta name="robots" content="index, follow" />
+  <meta name="description" content="Put maps in your forms and get/show the coordinates from a place. Support UTM and Geographic coordinates." />
+
+    <!-- Open Graph -->
+
+  <meta property="og:url" content="https://vulturorg.github.io/gms/" />
+  <meta property="og:site_name" content="Vultur" />
+  <meta property="og:title" content="Google Maps Snippet" />
+  <meta property="og:image" content="assets/images/google-maps.png" />
+  <meta property="og:description" content="Put maps in your forms and get/show the coordinates from a place. Support for UTM and Geographic coordinates." />
+  <meta property="og:type" content="website" />
+
+    <!-- /Open Graph -->
+
+    <!-- Rich Snippets -->
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "SoftwareApplication",
+      "headline": "Google Maps Snippet",
+      "description": "Put maps in your forms and get/show the coordinates from a place.",
+      "version": "0.3.0",
+      "license": "MIT",
+      "author": {
+        "@type": "Organization",
+        "name": "Vultur",
+        "email": "info@vultur.org.ve"
+      },
+      "applicationCategory": "Travel & Local",
+      "downloadUrl": "https://github.com/VulturOrg/gms/archive/master.zip",
+      "fileSize": "12KB",
+      "operatingSystem": "All",
+      "releaseNotes": "https://github.com/VulturOrg/gms/raw/master/CHANGELOG",
+      "screenshot": "https://github.com/VulturOrg/gms/raw/master/screenshots/simple.png",
+      "softwareRequirements": "Google Maps JavaScript API and optionaly Proj4JS",
+      "fileFormat": "application/javascript",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingCount": 0,
+        "ratingValue": 1
+      },
+      "offers": 0
+    }
+  </script>
+
+    <!-- /Rich Snippets -->
+
+  <!-- /SEO -->
+
+  <!-- Icons -->
+
+    <!-- Chrome on Android (192x192) -->
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" sizes="192x192" href="assets/images/favicon-192x192.png">
+
+    <!-- /Chrome on Android (192x192) -->
+
+    <!-- Safari on iOS (120x120) -->
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="{{ Site name }}">
+  <link rel="apple-touch-icon-precomposed" href="assets/images/favicon-120x120.png">
+
+    <!-- /Safari on iOS (120x120) -->
+
+    <!-- Windows (144x144) -->
+
+  <meta name="msapplication-TileImage" content="assets/images/favicon-144x144.png">
+  <meta name="msapplication-TileColor" content="#212121">
+
+    <!-- /Windows (144x144) -->
+
+    <!-- Default (32x32) -->
+  <link rel="shortcut icon" href="assets/images/favicon.png">
+
+  <!-- /Icons -->
+
+  <!-- MDL -->
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.teal-red.min.css" />
+
+  <!-- /MDL -->
+
+  <!-- GMS -->
+
+    <!-- Local use -->
+  <!-- <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script> -->
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKbrjFlfVQ86p9w39umFuJStkJe5uAG9Q&libraries=places"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.14/proj4.js"></script>
+  <script type="text/javascript" src="assets/js/gms.js"></script>
+
+  <!-- /GMS -->
+
+  <style>
+    #view-repo {
+      position: fixed;
+      right: 2em;
+      bottom: 1em;
+      z-index: 900;
+    }
+
+    .mdl-selectfield {
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(0,0,0,.12);
+      font-family: "Roboto";
+      padding: 4px 0;
+
+      margin: 0;
+    }
+  </style>
+
+  <title>Google Maps Snippet</title>
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+
+  <!-- Navbar -->
+
+    <div class="mdl-layout__header-row">
+      <span class="mdl-layout-title">Google Maps Snippet (<strong>GMS</strong>)</span>
+
+      <div class="mdl-layout-spacer"></div>
+
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a href="#simple" class="mdl-navigation__link">Simple map</a>
+        <a href="#fields" class="mdl-navigation__link">Fields</a>
+        <a href="#searchbox" class="mdl-navigation__link">Searchbox</a>
+        <a href="#default" class="mdl-navigation__link">Default place</a>
+        <a href="#complex" class="mdl-navigation__link">Complex Map</a>
+        <a href="#readonly" class="mdl-navigation__link">Read Only</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- /Navbar -->
+
+  <!-- Drawer -->
+
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">GMS</span>
+    <nav class="mdl-navigation">
+      <a href="#simple" class="mdl-navigation__link">Simple map</a>
+        <a href="#fields" class="mdl-navigation__link">Fields</a>
+        <a href="#searchbox" class="mdl-navigation__link">Searchbox</a>
+        <a href="#default" class="mdl-navigation__link">Default place</a>
+        <a href="#complex" class="mdl-navigation__link">Complex Map</a>
+        <a href="#readonly" class="mdl-navigation__link">Read Only</a>
+    </nav>
+  </div>
+
+  <!-- /Drawer -->
+
+  <main class="mdl-layout__content">
+    <div class="page-content mdl-grid">
+
+      <!-- Simple map -->
+
+      <div id="simple" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">1. Simple map</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <div id="map1"></div>
+
+          <script>
+            new Map({target: "#map1"}).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L95-L119" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Simple map -->
+
+      <!-- Fields -->
+
+      <div id="fields" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">2. Fields</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <p><strong>GMS</strong> lets you get the coords from a place and put them in fields or another HTML object, you must click in the map and then click the marker (<i class="material-icons" style="color: red">place</i>) that just appear; if you want delete some marker, you have to double click it.</p>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Latitude:</strong> <input type="text" id="lat-2" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Longitude:</strong> <input type="text" id="lng-2" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <br />
+
+          <strong>Zone:</strong> <select id="zone-2" class="mdl-selectfield">
+            <option value="">Zone</option>
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option>
+            <option value="9">9</option><option value="10">10</option>
+            <option value="11">11</option><option value="12">12</option>
+            <option value="13">13</option><option value="14">14</option>
+            <option value="15">15</option><option value="16">16</option>
+            <option value="17">17</option><option value="18">18</option>
+            <option value="19">19</option><option value="20">20</option>
+            <option value="21">21</option><option value="22">22</option>
+            <option value="23">23</option><option value="24">24</option>
+            <option value="25">25</option><option value="26">26</option>
+            <option value="27">27</option><option value="28">28</option>
+            <option value="29">29</option><option value="30">30</option>
+            <option value="31">31</option><option value="32">32</option>
+            <option value="33">33</option><option value="34">34</option>
+            <option value="35">35</option><option value="36">36</option>
+            <option value="37">37</option><option value="38">38</option>
+            <option value="39">39</option><option value="40">40</option>
+            <option value="41">41</option><option value="42">42</option>
+            <option value="43">43</option><option value="44">44</option>
+            <option value="45">45</option><option value="46">46</option>
+            <option value="47">47</option><option value="48">48</option>
+            <option value="49">49</option><option value="50">50</option>
+            <option value="51">51</option><option value="52">52</option>
+            <option value="53">53</option><option value="54">54</option>
+            <option value="55">55</option><option value="56">56</option>
+            <option value="57">57</option><option value="58">58</option>
+            <option value="59">59</option><option value="60">60</option>
+          </select>
+
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Hemisphere:</strong> <input type="text" id="hemisphere-2" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <br />
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Easting:</strong>
+            <textarea class="mdl-textfield__input" type="text" rows="3" id="easting-2" readonly="readonly"></textarea>
+          </div>
+
+          <span class="mdl-chip mdl-chip--contact" title="Northing">
+            <span class="mdl-chip__contact mdl-color--teal mdl-color-text--white">N</span>
+            <span id="northing-2" class="mdl-chip__text"></span>
+          </span>
+
+          <br /><br />
+
+          <div id="map2"></div>
+
+          <script>
+            new Map({
+              target: "#map2",
+              fields: {
+                lat: "#lat-2",
+                lng: "#lng-2",
+                zone: "#zone-2",
+                hemisphere: "#hemisphere-2",
+                easting: "#easting-2",
+                northing: "#northing-2"
+              },
+              callable: function (location) {
+                alert("You can set a custom callable when a marker is clicked");
+              }
+            }).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L121-L222" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Fields -->
+
+      <!-- Searchbox -->
+
+      <div id="searchbox" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">3. Searchbox</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <p>The <a href="https://developers.google.com/maps/documentation/javascript/" target="_blank">Google Maps API</a> provides an usefull searchbox, it can be enabled easily.</p>
+
+          <div id="map3"></div>
+
+          <script>
+            new Map({
+              target: "#map3",
+              searchbox: true
+            }).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L224-L251" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Searchbox -->
+
+      <!-- Default place -->
+
+      <div id="default" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">4. Default place</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <p>If is needed, a current place can be defined.</p>
+
+          <div id="map4"></div>
+
+          <script>
+            new Map({
+              target: "#map4",
+              current: {lat: 6.42375, lng: -66.58973000000003}
+            }).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L253-L280" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Default place -->
+
+      <!-- Complex Map -->
+
+      <div id="complex" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">5. Complex Map</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <p>This is an All-in-One implementation of the previous samples.</p>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Latitude:</strong> <input type="text" id="lat-5" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Longitude:</strong> <input type="text" id="lng-5" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <br />
+
+          <strong>Zone:</strong> <select id="zone-5" class="mdl-selectfield">
+            <option value="">Zone</option>
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option>
+            <option value="9">9</option><option value="10">10</option>
+            <option value="11">11</option><option value="12">12</option>
+            <option value="13">13</option><option value="14">14</option>
+            <option value="15">15</option><option value="16">16</option>
+            <option value="17">17</option><option value="18">18</option>
+            <option value="19">19</option><option value="20">20</option>
+            <option value="21">21</option><option value="22">22</option>
+            <option value="23">23</option><option value="24">24</option>
+            <option value="25">25</option><option value="26">26</option>
+            <option value="27">27</option><option value="28">28</option>
+            <option value="29">29</option><option value="30">30</option>
+            <option value="31">31</option><option value="32">32</option>
+            <option value="33">33</option><option value="34">34</option>
+            <option value="35">35</option><option value="36">36</option>
+            <option value="37">37</option><option value="38">38</option>
+            <option value="39">39</option><option value="40">40</option>
+            <option value="41">41</option><option value="42">42</option>
+            <option value="43">43</option><option value="44">44</option>
+            <option value="45">45</option><option value="46">46</option>
+            <option value="47">47</option><option value="48">48</option>
+            <option value="49">49</option><option value="50">50</option>
+            <option value="51">51</option><option value="52">52</option>
+            <option value="53">53</option><option value="54">54</option>
+            <option value="55">55</option><option value="56">56</option>
+            <option value="57">57</option><option value="58">58</option>
+            <option value="59">59</option><option value="60">60</option>
+          </select>
+
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Hemisphere:</strong> <input type="text" id="hemisphere-5" class="mdl-textfield__input" readonly="readonly" />
+          </div>
+
+          <br />
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <strong>Easting:</strong>
+            <textarea class="mdl-textfield__input" type="text" rows="3" id="easting-5" readonly="readonly"></textarea>
+          </div>
+
+          <span class="mdl-chip mdl-chip--contact" title="Northing">
+            <span class="mdl-chip__contact mdl-color--teal mdl-color-text--white">N</span>
+            <span id="northing-5" class="mdl-chip__text"></span>
+          </span>
+
+          <br /><br />
+
+          <div id="map5"></div>
+
+          <script>
+            new Map({
+              target: "#map5",
+              current: [
+                {lat: 6.42375, lng: -66.58973000000003},
+                {lat: 6.42375, lng: -67.58973000000003},
+                {lat: 7.42375, lng: -66.58973000000003},
+                {lat: 7.42375, lng: -67.58973000000003}
+              ],
+              searchbox: {
+                placeholder: "Custom placeholder"
+              },
+              fields: {
+                lat: "#lat-5",
+                lng: "#lng-5",
+                zone: "#zone-5",
+                hemisphere: "#hemisphere-5",
+                easting: "#easting-5",
+                northing: "#northing-5"
+              },
+              callable: function (location) {
+                alert("You can set a custom callable when a marker is clicked");
+              }
+            }).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L282-L392" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Complex Map -->
+
+      <!-- Read Only -->
+
+      <div id="readonly" class="demo-card-wide mdl-card mdl-shadow--2dp mdl-cell mdl-cell--10-col mdl-cell--1-offset">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">6. Read Only</h2>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+          <p>A map for only read purposes.</p>
+          <div id="map6"></div>
+
+          <script>
+            new Map({
+              target: "#map6",
+              current: {lat: 6.42375, lng: -66.58973000000003},
+              readonly: true
+            }).init();
+          </script>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+          <a href="https://github.com/VulturOrg/gms/blob/gh-pages/index.html#L394-L421" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" target="_blank">
+            View source
+          </a>
+        </div>
+      </div>
+
+      <!-- /Read Only -->
+
+    </div>
+  </main>
+
+  <a href="https://github.com/VulturOrg/gms" target="_blank" id="view-repo" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--accent mdl-color-text--accent-contrast">View Repo</a>
+</div>
+
+  <!-- MDL -->
+  <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+</body>
+</html>
